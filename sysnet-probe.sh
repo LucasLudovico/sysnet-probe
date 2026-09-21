@@ -5,13 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Carrega os modulos de suporte
 source "${SCRIPT_DIR}/lib/system.sh"
+source "${SCRIPT_DIR}/lib/network.sh"
 
 show_usage() {
-    echo "Usage: $0 [OPTION]"
+    echo "Usage: $0 [OPTION] [ARGUMENT]"
     echo ""
     echo "Options:"
     echo "  --system              Inspect CPU, memory usage, and load averages"
     echo "  --process <name>      Inspect running metrics for a specific process"
+    echo "  --network <host>      Check ICMP connectivity and DNS resolution"
+    echo "  --ports <host>        Perform TCP port scan (22, 80, 443)"
     echo "  --help                Display this help message"
 }
 
@@ -31,6 +34,22 @@ case "$1" in
             exit 1
         fi
         inspect_process "$2"
+        ;;
+    --network)
+        if [[ -z "$2" ]]; then
+            echo "Error: Flag --network requires a host or IP argument." >&2
+            exit 1
+        fi
+        check_connectivity "$2"
+        echo ""
+        resolve_dns "$2"
+        ;;
+    --ports)
+        if [[ -z "$2" ]]; then
+            echo "Error: Flag --ports requires a target host argument." >&2
+            exit 1
+        fi
+        scan_ports "$2"
         ;;
     --help)
         show_usage
